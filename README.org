@@ -1,0 +1,37 @@
+#+TITLE: ob-sclang
+** Why do I even?
+[[https://orgmode.org/][Org-mode]] makes [[http://literateprogramming.com/][literate programming]] easy via [[https://orgmode.org/worg/library-of-babel.html][Library of Babel]]. Il simply allows to mix text with executable /code blocks/ (which can also be extracted (/tangled/) into separate, executable files. The beauty the Library of Babel implementation in org-mode lies in the fact that it supports many languages. I craved support for [[https://github.com/supercollider/supercollider][SuperCollider]] and craving became an itch when I needed to document a working pipeline alternating between executing sclang and shell scripts. I scratched an itch with this little module.
+** How to install?
+First of all, you will need emacs and SuperCollider (with emacs support) installed. Modern emacsen (>25) and Spacemacs come with bundled org-mode. At this point I am the sole user of this plugin and have just written it so I am not itching yet for MELPA or inclusion in the official org-mode repositories, so installation is manual. You can either drop [[file:ob-sclang.el]] somewhere in your Emacs' path or add it to =.init= file:
+#+BEGIN_SRC elisp
+(add-to-list 'load-path "/path/to/ob-sclang.el")
+#+END_SRC
+
+You will also have to add it to =(org-babel-do-load-languages)=
+#+BEGIN_SRC elisp
+(org-babel-do-load-languages
+ '(org-babel-load-languages
+   (quote
+    ((sclang . t)))))
+#+END_SRC
+** And then?
+well, then you type a clock like this one:
+#+BEGIN_SRC org :results none
+#+BEGIN_SRC sclang
+"boo".postln;
+#+END_SRC
+#+END_SRC
+And you should see the string appear in your =SCLang:PostBuffer*=
+** Known issues
+At this point, this plugin has a very crude functionality. It allows unidirectional control of SuperCollider process running inside Emacs. As such, here is a list of issues:
+
+- sclang process has a tendency to replace Emacs frames with =Workspace= and =PostBuffer= when it lunches, therefore if have not already started sclang, your code block with start it for you, but your current buffer will loose focus.
+- There is no support for any parameters that code blocks usually support
+- The code you execute will not return anything back to the document you are working in
+
+I may raise the first point with the current sclang-mode maintainer...
+I will probably address the second point in the near future. I have not used this set up much yet (actually, almost at all, as I just scratched my itch and only now I am ready to complete the project at hand) but could see the usefulness of passing variables from other code blocks to sclang.
+
+The last point is probably more problematic but it may be useful to get some datatypes from sclang.
+
+Of course feel free to open questions, suggestions, discussions and even pull requests.
