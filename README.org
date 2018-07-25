@@ -22,6 +22,7 @@ well, then you type a clock like this one:
 #+END_SRC
 #+END_SRC
 And you should see the string appear in your =SCLang:PostBuffer*=
+*Note:*, that if you have not already started SuperCollider process, the plugin will do it for you as soon as you create a source block of type =sclang=.
 ** Known issues
 At this point, this plugin has a very crude functionality. It allows unidirectional control of SuperCollider process running inside Emacs. As such, here is a list of issues:
 
