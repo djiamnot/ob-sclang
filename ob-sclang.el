@@ -39,11 +39,32 @@
 ;; optionally declare default header arguments for this language
 (defvar org-babel-default-header-args:sclang '())
 
+(defun org-babel-expand-body:sclang (body params)
+;;   "Expand BODY according to PARAMS, return the expanded body."
+  (let ((vars (org-babel--get-vars params)))
+    (mapc
+     (lambda (pair)
+       (let ((name (symbol-name (car pair)))
+             (value (cdr pair)))
+         (setq body
+               (replace-regexp-in-string
+                (regexp-quote name)
+                (cond
+                 ((stringp value) (format "%S" value))
+                 ((floatp value) (format "%f" value))
+                 ((integerp value) (format "%d" value))
+                 ((symbolp value) (concat (format "%S" (symbol-name value)) ".asSymbol"))
+                 )
+                body))))
+     vars)
+    body))
+
 (defun org-babel-execute:sclang (body params)
   "Execute a block of Sclang code with org-babel.
 This function is called by `org-babel-execute-src-block'"
-    (sclang-eval-string body)
-    )
+
+  (sclang-eval-string (org-babel-expand-body:sclang body params))
+  )
 
 (defun org-babel-prep-session:sclang (session params)
   "Prepare SESSION according to the header arguments specified in PARAMS."
