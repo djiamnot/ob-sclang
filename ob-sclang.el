@@ -37,7 +37,8 @@
 (add-to-list 'org-babel-tangle-lang-exts '("sclang" . "scd"))
 
 ;; optionally declare default header arguments for this language
-(defvar org-babel-default-header-args:sclang '())
+(defvar org-babel-default-header-args:sclang
+  '((:results . "none")))
 
 (defun org-babel-expand-body:sclang (body params)
 ;;   "Expand BODY according to PARAMS, return the expanded body."
