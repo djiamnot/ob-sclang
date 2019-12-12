@@ -3,9 +3,11 @@
 #+STARTUP: showstars
 
 ** Why do I even?
-[[https://orgmode.org/][Org-mode]] makes [[http://literateprogramming.com/][literate programming]] easy via [[https://orgmode.org/worg/library-of-babel.html][Library of Babel]]. Il simply allows to mix text with executable /code blocks/ (which can also be extracted (/tangled/) into separate, executable files. The beauty the Library of Babel implementation in org-mode lies in the fact that it supports many languages. I craved support for [[https://github.com/supercollider/supercollider][SuperCollider]] and craving became an itch when I needed to document a working pipeline alternating between executing sclang and shell scripts. I scratched an itch with this little module.
+[[https://orgmode.org/][Org-mode]] makes [[http://literateprogramming.com/][literate programming]] easy via [[https://orgmode.org/worg/library-of-babel.html][Library of Babel]]. Il simply allows to mix text with executable /code blocks/ (which can also be extracted (/tangled/) into separate, executable files. The beauty of the Library of Babel implementation in org-mode lies in the fact that it supports many languages. I craved support for [[https://github.com/supercollider/supercollider][SuperCollider]] and craving became an itch when I needed to document a working pipeline alternating between executing sclang and shell scripts. I scratched an itch with this little module.
+
 ** How to install?
-First of all, you will need emacs and SuperCollider (with emacs support) installed. Modern emacsen (>25) and Spacemacs come with bundled org-mode. At this point I am the sole user of this plugin and have just written it so I am not itching yet for MELPA or inclusion in the official org-mode repositories, so installation is manual. You can either drop [[file:ob-sclang.el]] somewhere in your Emacs' path or add its containing directory to ~load-path~ in =.init= file:
+First of all, you will need emacs (>=25) and SuperCollider (with emacs support) installed. Modern emacsen and Spacemacs come with bundled org-mode. At this point I am the sole user of this plugin and have just written it so I am not itching yet for MELPA or inclusion in the official org-mode repositories, so installation is manual. You can either drop [[file:ob-sclang.el]] somewhere in your Emacs' path or add its containing directory to ~load-path~ in =.init= file:
+
 #+BEGIN_SRC elisp
  (add-to-list 'load-path "/path/to/ob-sclang/")
 #+END_SRC
@@ -17,8 +19,10 @@ You will also have to add it to =(org-babel-do-load-languages)=
     'org-babel-load-languages
     '((sclang . t)))
 #+END_SRC
+
 ** And then?
-well, then you type a block like this one:
+
+Well, then you type a block like this one:
 #+BEGIN_SRC org
   ,#+BEGIN_SRC sclang
     "boo".postln;
@@ -26,8 +30,7 @@ well, then you type a block like this one:
 #+END_SRC
 And after you hit /C-c C-c/ you should see the string appear in your =SCLang:PostBuffer*=
 
-*Note:*, that if you have not already started SuperCollider process, the plugin will do it for you as soon as you create a source block of type =sclang=.
-
+*Note:*, make sure you execute =sclang-start= prior to executing any sclang code blocks
 
 *** Use of variables
 
@@ -69,11 +72,62 @@ is accessible here:
 ** Known issues
 At this point, this plugin has a very crude functionality. It allows unidirectional control of SuperCollider process running inside Emacs. As such, here is a list of issues:
 
-- sclang process has a tendency to replace Emacs frames with =Workspace= and =PostBuffer= when it lunches, therefore if have not already started sclang, your code block with start it for you, but your current buffer will loose focus.
-- The code you execute will not return anything back to the document you are working in (well, it just prints back all lines it executed so simply use =:results none= to limit the noise.
-
-I may raise the first point with the current sclang-mode maintainer...
-
-The last point is probably more problematic but it may be useful to get some datatypes from sclang. It merits some thought.
-
 Of course feel free to open questions, suggestions, discussions and even pull requests.
+
+* Some tests
+
+The code blocks beyond this point can be executed from an org buffer:
+
+Post some string to SC's Post Buffer:
+#+begin_src sclang
+"boo".postln;
+#+end_src
+
+This python code does not need to be evaluated beforehand because it will be evaluated by sclang block below.
+#+name: frompy
+#+begin_src python :session sc :results value
+[1,2,3,4]
+#+end_src
+
+#+RESULTS: frompy
+| 1 | 2 | 3 | 4 |
+
+And we will use this table as input data
+#+name: tbl
+| boo  | 5 | 9 |
+| good | 7 | xa |
+
+And here we execute some sclang that simply reads variables specified in code block's header. They include named python codeblock above and the table.
+#+begin_src sclang :var x=10 y=11 z=1.1 table=tbl tb=frompy
+  x.postln;
+  x.class.postln;
+  y.postln;
+  y.class.postln;
+  z.postln;
+  z.class.postln;
+  table.postln;
+  table.class.postln;
+  table[0].postln;
+  tb.postln;
+  tb.class.postln;
+#+end_src
+
+And this is the output to SC's Post Buffer.
+#+begin_example
+10
+Integer
+11
+Integer
+1.1
+Float
+[ [ boo, 5, 9 ], [ good, 7, xa ] ]
+Array
+[ boo, 5, 9 ]
+[ 1, 2, 3, 4 ]
+Array
+#+end_example
+
+* Local Variables                                                  :noexport:
+# Local Variables:
+# org-confirm-babel-evaluate: nil
+# End:
