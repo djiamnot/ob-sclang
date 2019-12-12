@@ -5,7 +5,7 @@
 ;; Author: Michal Seta
 ;; Keywords: supercollider, literate programming, reproducible research
 ;; Homepage: https://github.com/djiamnot/ob-sclang.git
-;; Version: 0.01
+;; Version: 0.02
 
 ;;; License:
 
@@ -41,7 +41,7 @@
   '((:results . "none")))
 
 (defun org-babel-expand-body:sclang (body params)
-;;   "Expand BODY according to PARAMS, return the expanded body."
+  "Expand BODY according to PARAMS, return the expanded body."
   (let ((vars (org-babel--get-vars params)))
     (mapc
      (lambda (pair)
@@ -50,15 +50,21 @@
          (setq body
                (replace-regexp-in-string
                 (regexp-quote name)
-                (cond
-                 ((stringp value) (format "%S" value))
-                 ((floatp value) (format "%f" value))
-                 ((integerp value) (format "%d" value))
-                 ((symbolp value) (concat (format "%S" (symbol-name value)) ".asSymbol"))
-                 )
+                (org-babel-sclang-var-to-sclang value)
                 body))))
      vars)
     body))
+
+(defun org-babel-sclang-var-to-sclang (var)
+  "Convert an elisp value to a string of sclang code represting the value of the
+  variable with correct type."
+  (if (listp var)
+      (concat "[" (mapconcat #'org-babel-sclang-var-to-sclang var ", ") "]")
+    (cond ((stringp var) (format "%S" var))
+          ((floatp var) (format "%f" var))
+          ((integerp var) (format "%d" var))
+          ((symbolp var) (concat (format "%S" (symbol-name var)) ".asSymbol")))
+    ))
 
 (defun org-babel-execute:sclang (body params)
   "Execute a block of Sclang code with org-babel.
