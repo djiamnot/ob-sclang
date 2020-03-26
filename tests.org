@@ -1,0 +1,41 @@
+* ob-sclang tests
+
+These blocks are best evaluated inside emacs.
+
+Post a simple line:
+#+begin_src sclang
+"boo".postln;
+#+end_src
+
+This python code does not need to be evaluated beforehand.
+#+name: frompy
+#+begin_src python :session sc :results value
+[1,2,3,4]
+#+end_src
+
+#+RESULTS: frompy
+| 1 | 2 | 3 | 4 |
+
+
+
+#+name: tbl
+| boo  | 5 | 9 |
+| good | 7 | xa |
+
+#+begin_src sclang :session boo :dir "/tmp" :var x=10 y=11 z=1.1 table=tbl tb=frompy
+  x.postln;
+  x.class.postln;
+  y.postln;
+  y.class.postln;
+  z.postln;
+  z.class.postln;
+  table.postln;
+  table.class.postln;
+  tb.postln;
+  tb.class.postln;
+#+end_src
+
+* Local Variables                                                  :noexport:
+# Local Variables:
+# org-confirm-babel-evaluate: nil
+# End:
