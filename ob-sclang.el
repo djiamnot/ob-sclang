@@ -1,11 +1,12 @@
-;;; ob-sclang.el --- org-babel functions for sclang evaluation
+;;; ob-sclang.el --- Org-babel interface for SuperCollider  -*- coding: utf-8;
 
 ;; Copyright (C) 2018 Michal Seta
 
 ;; Author: Michal Seta
-;; Keywords: supercollider, literate programming, reproducible research
-;; Homepage: https://github.com/djiamnot/ob-sclang.git
-;; Version: 0.02
+;; Keywords: supercollider, literate programming, multimedia, languages, tools
+;; URL: https://github.com/djiamnot/ob-sclang
+;; Package-Requires: ((emacs "26.1") (sclang "1.0"))
+;; Version: 0.3
 
 ;;; License:
 
@@ -24,21 +25,21 @@
 ;; Free Software Foundation, Inc., 51 Franklin Street, Fifth Floor,
 ;; Boston, MA 02110-1301, USA.
 
-;;; Requirements:
-;;; sclang requires SuperCollider, of course. You need to have both the SuperCollider
-;;; system installed and the sclang-mode
-;;; SuperCollider can be found at https://github.com/supercollider/supercollider
+;;; Commentary:
+;; ob-sclang enables SuperCollider source blocks to be used in org files
+
 
 ;;; Code:
 (require 'ob)
 (require 'sclang)
 
-;; optionally define a file extension for this language
+;; add file extensions for sclang
 (add-to-list 'org-babel-tangle-lang-exts '("sclang" . "scd"))
 
-;; optionally declare default header arguments for this language
+;; declare default header arguments for sclang code blocks
 (defvar org-babel-default-header-args:sclang
-  '((:results . "none")))
+  '((:session . "*SCLang:Workspace*")
+    (:result . "none")))
 
 (defun org-babel-expand-body:sclang (body params)
   "Expand BODY according to PARAMS, return the expanded body."
@@ -56,37 +57,34 @@
     body))
 
 (defun org-babel-sclang-var-to-sclang (var)
-  "Convert an elisp value to a string of sclang code represting the value of the
-  variable with correct type."
+  "Convert an elisp value VAR to a string of sclang code.
+The value of the variable should be represented with correct type."
   (if (listp var)
       (concat "[" (mapconcat #'org-babel-sclang-var-to-sclang var ", ") "]")
     (cond ((stringp var) (format "%S" var))
           ((floatp var) (format "%f" var))
           ((integerp var) (format "%d" var))
-          ((symbolp var) (concat (format "%S" (symbol-name var)) ".asSymbol")))
-    ))
+          ((symbolp var) (concat (format "%S" (symbol-name var)) ".asSymbol")))))
 
 (defun org-babel-execute:sclang (body params)
-  "Execute a block of Sclang code with org-babel.
-This function is called by `org-babel-execute-src-block'"
-
-  (sclang-eval-string (org-babel-expand-body:sclang body params))
-  )
+  "Execute a block of sclang code with org-babel.
+This function is called by `org-babel-execute-src-block' with BODY and PARAMS"
+  (sclang-eval-string (org-babel-expand-body:sclang body params)))
 
 (defun org-babel-prep-session:sclang (session params)
   "Prepare SESSION according to the header arguments specified in PARAMS."
-  (error "No need for session preparation")
-  )
+  (message "No need for session preparation"))
 
 (defun org-babel-sclang-initiate-session (&optional session)
-  "If there is not a current inferior-process-buffer in SESSION then create.
+  "If there is not a current inferior-process-buffer in SESSION then create one.
 Return the initialized session."
   (unless (string= session "none")
-    (let (session (if sclang-library-initialized-p
+    (let ((session (if sclang-library-initialized-p
                       sclang-post-buffer
                     (save-window-excursion
                       (sclang-start)
-                      (current-buffer) ))))))
+                      (current-buffer)))))
+      session)))
 
 (provide 'ob-sclang)
 ;;; ob-sclang.el ends here
