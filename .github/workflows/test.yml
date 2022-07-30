@@ -3,10 +3,10 @@ name: CI
 on:
   push:
     paths-ignore:
-      - '**.md'
+      - '**.org'
   pull_request:
     paths-ignore:
-      - '**.md'
+      - '**.org'
 
 jobs:
   test:
@@ -14,6 +14,7 @@ jobs:
     strategy:
       matrix:
         emacs_version:
+          - 28.1
           - 27.2
           - 26.3
           - 25.3
@@ -32,11 +33,9 @@ jobs:
 
     - name: Test the uncompiled source
       run: |
-        cd el
         eldev -p -dtT test
 
     - name: Compile and run tests again
       run: |
-        cd el
         eldev compile
         eldev -p -dtT test
